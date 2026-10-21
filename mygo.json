@@ -1,0 +1,10 @@
+{
+  "name": "GodGo",
+  "identifier": "app.godgo.shell",
+  "version": "0.1.0",
+  "out": "build",
+  "updates": {
+    "publicKey": "cJHDeeXnHVJw6Qz06AKtyDW+2P3TphGNV2xejiCKU0o=",
+    "github": "openspring/GodGo"
+  }
+}

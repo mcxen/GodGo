@@ -1,0 +1,5 @@
+/build/
+/.mygo/
+mygo-update.key
+mygo-update.pub
+.DS_Store
