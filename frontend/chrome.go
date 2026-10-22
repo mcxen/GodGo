@@ -77,6 +77,8 @@ func iconButton(c *ui.Context, key string, svg *ui.SVG, label string, pal *palet
 	}
 }
 
+// framed hides the title bar and keeps the system's resize edges, shadow
+// and corners. Frameless would drop them; the view does not draw a frame.
 func framed(o mygo.WindowOptions) mygo.WindowOptions {
 	if ownControls {
 		o.TitleBarStyle = mygo.TitleBarHidden

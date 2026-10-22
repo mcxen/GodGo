@@ -2,6 +2,7 @@
 package frontend
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -71,8 +72,9 @@ func vibrancy(s settings.Settings) mygo.Vibrancy {
 func (a *App) settingsView(c *ui.Context) {
 	pal := paletteFor(c)
 	c.SetTheme(a.theme(c, pal))
-	if a.ss.problems != nil && a.toast == "" && len(a.ss.problems) > 0 {
-		// Shown once, from the main window's toast path the next time it draws.
+	if a.ss.notice != "" {
+		c.Toast(a.ss.notice)
+		a.ss.notice = ""
 	}
 	found := a.searchSettings()
 	c.OnShortcut(ui.Cmd, ui.KeyF, func() { a.ss.searchRef.Focus(c) })
@@ -94,7 +96,7 @@ func (a *App) settingsView(c *ui.Context) {
 				ui.Text(c, a.t("settings.noResults")).FontSize(13).TextColor(pal.textFaint).Padding(8, 10)
 			}
 			ui.Spacer(c)
-			link := ui.ButtonBase(c.Key("open-config")).Padding(6, 10).Gap(6).Radius(7).AlignItems(ui.Center).Label(a.t("settings.openConfig"))
+			link := ui.ButtonBase(c.Key("open-config")).Padding(6, 10).Gap(6).Radius(7).AlignItems(ui.Center).Label(a.t("settings.openConfig")).Tooltip(shortPath(filepath.Join(a.dir, "settings.json")))
 			fg := pal.textMuted
 			if link.Hovered() {
 				fg = pal.text
@@ -255,7 +257,11 @@ func (a *App) settingsSearch(c *ui.Context, pal *palette) {
 			Placeholder(label).Label(label)
 		in.OnShortcut(0, ui.KeyEscape, func() { a.ss.query = "" })
 		if a.ss.query != "" {
-			x := ui.ButtonBase(c.Key("clear")).Size(16, 16).Radius(8).Center().Shrink(0).Label(a.t("settings.clear"))
+			x := ui.ButtonBase(c.Key("clear")).Size(16, 16).Radius(8).Center().Shrink(0).Label(a.t("settings.clear")).
+				Background(pal.textFaint.Alpha(0.55)).TextColor(pal.card)
+			if x.Hovered() {
+				x.Background(pal.textMuted)
+			}
 			x.Children(func() { ui.Icon(c, closeIcon()).Size(8, 8) })
 			if x.Clicked() {
 				a.ss.query = ""
@@ -282,7 +288,7 @@ func (a *App) settingsNav(c *ui.Context, pal *palette, p settingsPage) {
 		bg = pal.rowHover
 	}
 	item.Background(item.AnimateColor("bg", bg, ui.Animation{Duration: 110 * time.Millisecond}))
-	if item.Pressed() && !sel {
+	if (item.Pressed() || item.Clicked()) && !sel {
 		a.ss.page = p.id
 	}
 	item.Children(func() {
@@ -323,12 +329,43 @@ func (a *App) settingRow(c *ui.Context, pal *palette, label, detail string, cont
 	row.Children(func() {
 		ui.Column(c).Grow(1).MinWidth(0).Gap(3).Children(func() {
 			ui.Text(c, label).FontSize(13.5).TextColor(pal.text)
-			if detail != "" {
-				ui.Text(c, detail).FontSize(12).TextColor(pal.textMuted).LineHeight(1.35)
+			if detail == "" {
+				return
+			}
+			shown := detail
+			if pathLike(detail) {
+				shown = shortPath(detail)
+			}
+			line := ui.Text(c, shown).FontSize(12).TextColor(pal.textMuted).LineHeight(1.35).MinWidth(0)
+			if pathLike(detail) {
+				line.SingleLine().Ellipsis("…").Tooltip(detail)
 			}
 		})
 		ui.Row(c).Shrink(0).Gap(8).AlignItems(ui.Center).Children(control)
 	})
+}
+
+func pathLike(s string) bool {
+	return strings.Contains(s, "/") || strings.Contains(s, `\`)
+}
+
+// shortPath writes a path with ~ for the home directory.
+func shortPath(path string) string {
+	if path == "" {
+		return ""
+	}
+	home, err := os.UserHomeDir()
+	if err != nil || home == "" {
+		return path
+	}
+	path, home = filepath.Clean(path), filepath.Clean(home)
+	if path == home {
+		return "~"
+	}
+	if strings.HasPrefix(path, home+string(os.PathSeparator)) {
+		return "~" + path[len(home):]
+	}
+	return path
 }
 
 func (a *App) versionLine() string {

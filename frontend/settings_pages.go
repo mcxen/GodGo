@@ -1,6 +1,7 @@
 package frontend
 
 import (
+	"path/filepath"
 	"strconv"
 
 	"github.com/egoist/mygo/ui"
@@ -30,7 +31,7 @@ func (a *App) generalPage(c *ui.Context, pal *palette) {
 				}
 				if err := a.onLogin(a.ss.loginOpen); err != nil {
 					a.ss.loginOpen = !a.ss.loginOpen
-					a.toast = err.Error()
+					a.ss.notice = err.Error()
 				}
 			})
 		})
@@ -175,7 +176,7 @@ func (a *App) keyboardPage(c *ui.Context, pal *palette) {
 				in.OnSubmit(func() {
 					v := *a.ss.draft[id]
 					if !settings.ValidAccelerator(v) {
-						a.toast = a.t("set.shortcut.invalid")
+						a.ss.notice = a.t("set.shortcut.invalid")
 						return
 					}
 					if a.set.Shortcuts == nil {
@@ -186,10 +187,12 @@ func (a *App) keyboardPage(c *ui.Context, pal *palette) {
 			})
 		}
 	})
-	if button(c, "reset-keys", a.t("set.shortcut.reset"), "", false, pal) {
-		a.set.Shortcuts = nil
-		a.ss.draft = map[string]*string{}
-	}
+	ui.Row(c).Children(func() {
+		if button(c, "reset-keys", a.t("set.shortcut.reset"), "", false, pal) {
+			a.set.Shortcuts = nil
+			a.ss.draft = map[string]*string{}
+		}
+	})
 }
 
 func (a *App) advancedPage(c *ui.Context, pal *palette) {
@@ -220,16 +223,16 @@ func (a *App) advancedPage(c *ui.Context, pal *palette) {
 }
 
 func resourceLabel() string {
-	dirs := resourceDirs()
-	for _, dir := range dirs {
-		if resourceFile("fonts/inter/OFL.txt") != "" {
-			return dir
+	path := resourceFile("fonts/inter/OFL.txt")
+	if path == "" {
+		dirs := resourceDirs()
+		if len(dirs) == 0 {
+			return ""
 		}
+		return dirs[0]
 	}
-	if len(dirs) == 0 {
-		return ""
-	}
-	return dirs[0]
+	// fonts/inter/OFL.txt sits three directories under the resources root.
+	return filepath.Dir(filepath.Dir(filepath.Dir(path)))
 }
 
 func joinProblems(ps []string) string {

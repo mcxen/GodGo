@@ -54,6 +54,40 @@ func TestSettingsPages(t *testing.T) {
 	}
 }
 
+func TestSettingsDetails(t *testing.T) {
+	dir := resourceLabel()
+	if _, err := os.Stat(filepath.Join(dir, "fonts", "inter", "OFL.txt")); err != nil {
+		t.Fatalf("resource dir %s: %v", dir, err)
+	}
+
+	a := testApp(t)
+	home, err := os.UserHomeDir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	a.dir = filepath.Join(home, "Library", "Application Support", "GodGo Dev")
+	a.root = filepath.Join(home, "Documents", "OpenSpring", "GodGo", strings.Repeat("nested-", 8))
+	a.ss.page = "advanced"
+	view := ui.NewTester(a.settingsView, 860, 640)
+	if !view.HasText("~/Library/Application Support/GodGo Dev") {
+		t.Fatalf("config path\n%s", strings.Join(view.Texts(), "\n"))
+	}
+	if view.HasText(a.dir) || view.HasText(a.root) {
+		t.Fatal("a full path is on the page")
+	}
+
+	a.ss.page = "keyboard"
+	a.ss.notice = "这个快捷键写得不对"
+	view.Frame()
+	if !view.HasText("这个快捷键写得不对") {
+		t.Fatal("settings notice was not shown")
+	}
+	r, ok := view.Find("恢复默认快捷键")
+	if !ok || r.W > 280 {
+		t.Fatalf("reset button ok=%v width %.1f", ok, r.W)
+	}
+}
+
 func TestSpecPage(t *testing.T) {
 	a := testApp(t)
 	if !strings.Contains(a.spec, "# GodGo 界面规范") {
@@ -66,6 +100,13 @@ func TestSpecPage(t *testing.T) {
 	view.Frame()
 	if !view.HasText("GodGo 界面规范") || !view.HasText("这份文件是界面契约") {
 		t.Fatalf("spec page\n%s", strings.Join(view.Texts(), "\n"))
+	}
+	if err := view.Click("复用"); err != nil {
+		t.Fatal(err)
+	}
+	view.Frame()
+	if !view.HasText("禁止重复造轮子") || !view.HasText("Onevra") {
+		t.Fatalf("reuse spec\n%s", strings.Join(view.Texts(), "\n"))
 	}
 }
 

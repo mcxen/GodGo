@@ -23,15 +23,15 @@ type App struct {
 	applied settings.Settings
 	live    bool
 
-	win    *mygo.Window
-	setWin *mygo.Window
-	chrome chrome
+	win      *mygo.Window
+	setWin   *mygo.Window
+	chrome   chrome
 	sideDrag float32
 
-	selected   string
-	ss         settingsState
-	pal        paletteState
-	extendOpen bool
+	selected    string
+	ss          settingsState
+	pal         paletteState
+	extendOpen  bool
 	confirmQuit bool
 	quitReady   bool
 
@@ -42,11 +42,13 @@ type App struct {
 	searchReveal string
 	groupRows    int
 
-	catalogs i18n.Catalogs
-	tasks    workflow.Catalog
-	spec     string
-	locale   string
-	notifyOK bool
+	catalogs  i18n.Catalogs
+	tasks     workflow.Catalog
+	spec      string
+	specReuse string
+	specWhich string
+	locale    string
+	notifyOK  bool
 
 	onCheckUpdates func()
 	onLogin        func(bool) error
@@ -60,6 +62,7 @@ type settingsState struct {
 	revealed  string
 	draft     map[string]*string
 	loginOpen bool
+	notice    string
 	updates   updatePrefs
 	scrolls   map[string]*ui.ScrollState
 	problems  []string
@@ -82,20 +85,22 @@ func newApp(dir string) *App {
 	set, probs, _ := settings.Load(dir)
 	tasks, _ := workflow.LoadFile(resourceFile("workflow/tasks.json"))
 	specText, _ := readResource("docs/ui-spec.md")
+	reuseText, _ := readResource("docs/reuse.md")
 	if _, ok := modules.ByID(set.LastModule); !ok || !set.RestorePage {
 		set.LastModule = "overview"
 	}
 	a := &App{
-		dir:      dir,
-		root:     moduleRoot(),
-		set:      set,
-		catalogs: catalogs,
-		tasks:    tasks,
-		spec:     string(specText),
-		selected: set.LastModule,
-		runs:     map[string]workflow.Result{},
-		running:  map[string]bool{},
-		ss:       settingsState{page: "general", problems: probs},
+		dir:       dir,
+		root:      moduleRoot(),
+		set:       set,
+		catalogs:  catalogs,
+		tasks:     tasks,
+		spec:      string(specText),
+		specReuse: string(reuseText),
+		selected:  set.LastModule,
+		runs:      map[string]workflow.Result{},
+		running:   map[string]bool{},
+		ss:        settingsState{page: "general", problems: probs},
 	}
 	a.applied = a.set.Clone()
 	return a

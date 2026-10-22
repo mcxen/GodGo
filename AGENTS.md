@@ -2,11 +2,14 @@
 
 改这个仓库之前先读：
 
-1. 本文件。它只讲怎么改，不重复界面细节。
-2. [`resources/docs/ui-spec.md`](resources/docs/ui-spec.md)。这是界面规范，也是应用里「规范」页渲染的那一份。
-3. [`README.md`](README.md)。目录、三处扩展，以及发布前要换的公钥和仓库。
+Grok 的配套技能是 [`.grok/skills/godgo/SKILL.md`](.grok/skills/godgo/SKILL.md)。它只把人带到下面这些文件，不另写一套尺寸和扩展点。
 
-界面以 `resources/docs/ui-spec.md` 为准。窗口、侧栏、设置、字体、快捷键或文案变了，同一次改动里更新那份规范。规范只写已经实现的行为。
+1. 本文件。它只讲怎么改，不重复规范正文。
+2. [`resources/docs/reuse.md`](resources/docs/reuse.md)。加组件或加能力之前先读。先查 MyGo、Onevra、Kero，禁止过度设计、过度防御和重复造轮子。
+3. [`resources/docs/ui-spec.md`](resources/docs/ui-spec.md)。这是已经实现的界面。窗口、侧栏、设置、字体、快捷键或文案变了，同一次改动里更新它。
+4. [`README.md`](README.md)。目录、三处扩展，以及发布前要换的公钥和仓库。
+
+两份规范都由侧栏「规范」渲染。正文只留在 `resources/docs/`，不要写进 Go 字符串，也不要再抄一份。
 
 ## 文档各管一段
 
@@ -15,10 +18,10 @@
 | 文件 | 谁读 | 打进应用 |
 |---|---|---|
 | `AGENTS.md` | 改仓库的 agent | 否 |
-| `resources/docs/ui-spec.md` | 人和「规范」页 | 是，`mygo dev` / `mygo build` 会带上 `resources/` |
+| `.grok/skills/godgo/SKILL.md` | 进入仓库的 Grok | 否 |
+| `resources/docs/reuse.md` | 加组件之前的人和「规范」页的复用 | 是 |
+| `resources/docs/ui-spec.md` | 改界面的人和「规范」页的界面 | 是 |
 | `README.md` | 第一次打开仓库的人 | 否 |
-
-「规范」页只读取 `docs/ui-spec.md`。不要把规范正文写进 Go 字符串，也不要在别处再放一份副本。
 
 ## 这个仓库是什么
 
@@ -49,7 +52,7 @@ GodGo 是技术外壳，不是业务产品。后续项目沿用窗口、设置�
 ## 改界面
 
 - 用户能看见的字符串放进两份文案，不要在 Go 里写死中文或英文。
-- 控件用 MyGo 的基础控件。稳定身份用 `c.Key`。不要把 `ui.Element` 存进 `App`。
+- 控件先按 `resources/docs/reuse.md` 选用已有的。稳定身份用 `c.Key`。不要把 `ui.Element` 存进 `App`。
 - 绑定值在构建之后才落地。`OnChange` 里看到的是这一帧重建后的值。
 - 慢的工作放进 goroutine，结果用 `Window.Update` 送回界面。`live` 为 false 时 `update` 直接执行函数，测试不要靠它跨 goroutine 改状态。
 - 用 `ui.NewTester` 点一条用户会走的路径。侧栏标题以 `testdata/ui/sidebar.txt` 为准。

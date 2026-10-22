@@ -27,7 +27,7 @@ testdata/ui/             界面测试用的侧栏标题
 
 `resources/` 会随 `mygo dev` 和 `mygo build` 打进应用。不要在 `mygo.json` 里再列一遍。
 
-界面规范只有一份：`resources/docs/ui-spec.md`。侧栏的「规范」渲染这个文件。改界面的 agent 先读根目录的 `AGENTS.md`，它指向这份规范，不另写一遍。
+规范有两份，侧栏的「规范」渲染它们。`resources/docs/ui-spec.md` 是已经实现的界面。`resources/docs/reuse.md` 规定加组件前先查 MyGo、Onevra 和 Kero，并且禁止过度设计、过度防御和重复造轮子。改仓库的 agent 先读根目录的 `AGENTS.md`。Grok 用配套技能 `.grok/skills/godgo/SKILL.md`，技能里不重写这两份规范。
 
 ## 三处扩展
 
