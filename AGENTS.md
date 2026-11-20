@@ -52,6 +52,7 @@ GodGo 是技术外壳，不是业务产品。后续项目沿用窗口、设置�
 ## 改界面
 
 - 用户能看见的字符串放进两份文案，不要在 Go 里写死中文或英文。
+- Avoid unnecessary secondary labels and descriptions. Let the layout do the explaining.
 - 控件先按 `resources/docs/reuse.md` 选用已有的。稳定身份用 `c.Key`。不要把 `ui.Element` 存进 `App`。
 - 绑定值在构建之后才落地。`OnChange` 里看到的是这一帧重建后的值。
 - 慢的工作放进 goroutine，结果用 `Window.Update` 送回界面。`live` 为 false 时 `update` 直接执行函数，测试不要靠它跨 goroutine 改状态。
